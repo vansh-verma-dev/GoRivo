@@ -4,13 +4,11 @@ require("dotenv").config();
 const app = require("./src/app");
 const connectDB = require("./src/config/db");
 const { PORT } = require("./src/config/config");
-
-console.log("GoRivo server starting...");
+ 
 
 const startServer = async () => {
     try {
-        console.log("Connecting to MongoDB Atlas...");
-
+    
         await connectDB();
 
         console.log("MongoDB Atlas connected successfully");
