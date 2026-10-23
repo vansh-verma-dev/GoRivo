@@ -19,6 +19,7 @@ app.get("/", (req, res) => {
 // Auth Routes
 app.use("/api/auth", authRouter);
 
+
 // Not Found Middleware
 app.use(notFoundMiddleware);
 
