@@ -55,7 +55,7 @@ function Navbar() {
                     </Link>
 
                     <Link
-                        to="/account"
+                        to="/signup"
                         className="rounded-2xl bg-black px-5 py-1.5 text-white transition-colors hover:bg-gray-800"
                     >
                         Sign up
@@ -65,7 +65,7 @@ function Navbar() {
                 {/* Mobile: Sign up + hamburger */}
                 <div className="flex items-center gap-2 md:hidden">
                     <Link
-                        to="/account"
+                        to="/startUi"
                         className="rounded-2xl bg-black px-4 py-1.5 text-sm text-white transition-colors hover:bg-gray-800"
                     >
                         Sign up
