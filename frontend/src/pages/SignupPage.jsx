@@ -3,6 +3,8 @@ import { FaUser, FaCarAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import { Link } from "react-router-dom";
 
+
+
 const roles = [
     {
         id: "rider",
@@ -42,14 +44,59 @@ const formItems = [
     },
 ];
 
+
 function SignupPage() {
+
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState("");
     const [selectedRole, setSelectedRole] = useState("rider");
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setMessage();
+        setLoading();
+
         const data = Object.fromEntries(new FormData(e.currentTarget));
-        console.log({ ...data, role: selectedRole });
+
+        const roleMap = {
+            rider: "passenger",
+            driver: "captain",
+        };
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
+                method: "POST",
+                headers: {
+                    "content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    ...data,
+                    role: roleMap[selectedRole]
+                }),
+            }
+            );
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Signup failed");
+            }
+
+            setMessage(result.message || "Account created successfully!");
+            setMessageType("success");
+            e.target.reset();
+            setSelectedRole("rider");
+        } catch (error) {
+            setMessage(
+                error.message === "failed to fetch"
+                    ? "Server se connection nahi ho pa raha. Please try again."
+                    : error.message
+            )
+            setMessageType("error");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -57,9 +104,9 @@ function SignupPage() {
 
             {/* --left-side-- */}
             <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-orange-500 to-orange-400 p-14 text-white">
-              <Link to={"/"}>
-                <h1 className="text-4xl font-extrabold tracking-tight">GoRivo</h1>
-              </Link>
+                <Link to={"/"}>
+                    <h1 className="text-4xl font-extrabold tracking-tight">GoRivo</h1>
+                </Link>
 
                 <div>
                     <p className="text-5xl font-bold leading-tight">
@@ -107,8 +154,8 @@ function SignupPage() {
                                     onClick={() => setSelectedRole(role.id)}
                                     aria-pressed={active}
                                     className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 ${active
-                                            ? "border-orange-500 bg-orange-50"
-                                            : "border-gray-200 bg-white hover:border-gray-300"
+                                        ? "border-orange-500 bg-orange-50"
+                                        : "border-gray-200 bg-white hover:border-gray-300"
                                         }`}
                                 >
                                     <span
@@ -131,6 +178,17 @@ function SignupPage() {
                     </div>
 
                     {/* Form */}
+                    {message && (
+                        <p
+                            role="alert"
+                            className={`rounded-lg p-3 text-sm ${messageType === "success"
+                                ? "bg-green-50 text-green-700"
+                                : "bg-red-50 text-red-700"
+                                }`}
+                        >
+                            {message}
+                        </p>
+                    )}
                     <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
                         {formItems.map((item) => {
                             const isPassword = item.name === "password";
@@ -171,9 +229,10 @@ function SignupPage() {
 
                         <button
                             type="submit"
-                            className="mt-2 w-full rounded-xl bg-orange-500 py-3.5 text-base font-semibold text-white transition hover:bg-orange-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2"
+                            disabled={loading}
+                            className="mt-2 w-full rounded-xl bg-orange-500 py-3.5 text-base font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            Create account
+                            {loading ? "Creating account..." : "Create account"}
                         </button>
                     </form>
 
