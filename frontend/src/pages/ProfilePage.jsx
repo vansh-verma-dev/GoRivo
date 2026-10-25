@@ -16,15 +16,15 @@ import {
 import Navbar from "../components/navbar";
 
 const quickActions = [
-  { label: "Trips", to: "/rides", icon: <FaClockRotateLeft /> },
+  { label: "Trips", to: "/rideHistory", icon: <FaClockRotateLeft /> },
   { label: "Wallet", to: "/payments", icon: <FaWallet /> },
-  { label: "Help", to: "/help", icon: <FaCircleQuestion /> },
+  { label: "Help", to: "/HelpSupport", icon: <FaCircleQuestion /> },
 ];
 
 const settings = [
   { label: "Saved places", to: "/saved-places", icon: <FaLocationDot /> },
   { label: "Payment methods", to: "/payments", icon: <FaCreditCard /> },
-  { label: "Safety & privacy", to: "/safety", icon: <FaShieldHalved /> },
+  { label: "Safety & privacy", to: "/HelpSupport", icon: <FaShieldHalved /> },
 ];
 
 function getInitials(name = "") {

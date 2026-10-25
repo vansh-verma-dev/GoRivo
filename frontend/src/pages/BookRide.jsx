@@ -15,6 +15,7 @@ import {
   FaVanShuttle,
 } from "react-icons/fa6";
 import Navbar from "../components/navbar";
+import { useNavigate } from "react-router-dom";
 
 const rideOptions = [
   {
@@ -54,6 +55,7 @@ const trustItems = [
 ];
 
 function BookRide() {
+  const Navigate = useNavigate();
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
   const [selectedRide, setSelectedRide] = useState("go-comfort");
@@ -75,12 +77,14 @@ function BookRide() {
   };
 
   const handleBookRide = () => {
+      Navigate("/BookConform");
     if (!pickup.trim() || !destination.trim()) {
       setError("Please enter both pickup and destination.");
       return;
     }
     setError("");
     setRideRequested(true);
+  
   };
 
   return (
