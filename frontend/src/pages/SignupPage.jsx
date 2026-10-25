@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaUser, FaCarAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import { Link } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 
 
 const roles = [
@@ -46,6 +46,7 @@ const formItems = [
 
 
 function SignupPage() {
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
@@ -55,8 +56,11 @@ function SignupPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage();
-        setLoading();
+
+        if (loading) return;
+
+        setMessage("");
+        setLoading(true);
 
         const data = Object.fromEntries(new FormData(e.currentTarget));
 
@@ -66,34 +70,44 @@ function SignupPage() {
         };
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
-                method: "POST",
-                headers: {
-                    "content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    ...data,
-                    role: roleMap[selectedRole]
-                }),
-            }
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/auth/signup`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        ...data,
+                        role: roleMap[selectedRole],
+                    }),
+                }
             );
+
             const result = await response.json();
 
             if (!response.ok) {
                 throw new Error(result.message || "Signup failed");
             }
 
+            localStorage.setItem("token", result.token);
+ 
+            navigate("/");
+
             setMessage(result.message || "Account created successfully!");
             setMessageType("success");
+
             e.target.reset();
             setSelectedRole("rider");
+
         } catch (error) {
             setMessage(
-                error.message === "failed to fetch"
+                error.message === "Failed to fetch"
                     ? "Server se connection nahi ho pa raha. Please try again."
                     : error.message
-            )
+            );
             setMessageType("error");
+
         } finally {
             setLoading(false);
         }
@@ -232,7 +246,7 @@ function SignupPage() {
                             disabled={loading}
                             className="mt-2 w-full rounded-xl bg-orange-500 py-3.5 text-base font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            {loading ? "Creating account..." : "Create account"}
+                            {loading ? "Please wait..." : "Create account"}
                         </button>
                     </form>
 
