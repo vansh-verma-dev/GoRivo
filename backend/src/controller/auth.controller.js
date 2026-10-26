@@ -5,8 +5,7 @@ const User = require("../module/user.module");
 
 const signup = async (req, res, next) => {
     try {
-
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
         // Validation
         if (!name || !email || !password) {
@@ -34,12 +33,14 @@ const signup = async (req, res, next) => {
             });
         }
 
+        // Signup se sirf passenger ya driver allowed, admin kabhi nahi
+        const allowedRoles = ["passenger", "driver"];
+        const userRole = allowedRoles.includes(role) ? role : "passenger";
+
         const normalizedEmail = email.trim().toLowerCase();
 
         // Check existing user
-        const existingUser = await User.findOne({
-            email: normalizedEmail,
-        });
+        const existingUser = await User.findOne({ email: normalizedEmail });
 
         if (existingUser) {
             return res.status(409).json({
@@ -56,6 +57,7 @@ const signup = async (req, res, next) => {
             name: name.trim(),
             email: normalizedEmail,
             password: hashedPassword,
+            role: userRole,
         });
 
         return res.status(201).json({

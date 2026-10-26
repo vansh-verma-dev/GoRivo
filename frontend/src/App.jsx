@@ -10,6 +10,7 @@ import BookingConfirmation from "./passinger/BookingConfirmationPage";
 import LiveRideTracking from "./passinger/Liveridetracking ";
 import RideHistory from "./passinger/Ridehistory ·";
 import HelpSupport from "./pages/HelpSupport";
+ 
 
 
 function App() {
@@ -25,6 +26,9 @@ function App() {
       <Route path="/liveRideTrack" element={<LiveRideTracking />} />
       <Route path="/rideHistory" element={<RideHistory />} />
       <Route path="/HelpSupport" element={<HelpSupport />} />
+
+ 
+
       <Route path="/*" element={<NotFound />} />
 
     </Routes>

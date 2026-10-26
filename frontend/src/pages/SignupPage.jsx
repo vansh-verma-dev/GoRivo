@@ -66,7 +66,7 @@ function SignupPage() {
 
         const roleMap = {
             rider: "passenger",
-            driver: "captain",
+            driver: "driver",
         };
 
         try {
