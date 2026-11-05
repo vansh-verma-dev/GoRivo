@@ -1,7 +1,6 @@
 
 const dns = require("node:dns");
-
-// Use public DNS for Node.js DNS lookups
+ 
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const mongoose = require("mongoose");

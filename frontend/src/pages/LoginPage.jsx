@@ -42,11 +42,20 @@ function LoginPage() {
 
             localStorage.setItem("token", result.token);
 
+            const role = result.user.role; // backend ke hisaab se check kar lena
+
+            localStorage.setItem("role", role);
             setMessage("Login successful!");
-            navigate("/");
+
+            if (role === "driver") {
+                navigate("/driver/home");
+            } else {
+                navigate("/passenger/bookRide");
+            }
 
         } catch (error) {
             console.error("Login error:", error);
+            setMessage(error.message);
         } finally {
             setLoading(false);
         }

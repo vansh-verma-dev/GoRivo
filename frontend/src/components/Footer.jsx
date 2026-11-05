@@ -30,11 +30,11 @@ function Footer() {
         <footer className="w-full bg-white pt-6 pb-4">
 
             {/* Banner */}
-            <div className="w-[90%] mx-auto rounded-3xl overflow-hidden">
+            <div className="w-[90%]  mx-auto rounded-3xl overflow-hidden">
                 <img
                     src={Footer_Banner}
                     alt="Gorivo banner"
-                    className="w-full h-auto block"
+                    className="w-full h-20  sm:h-auto block"
                 />
             </div>
 

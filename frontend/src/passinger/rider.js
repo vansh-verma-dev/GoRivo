@@ -1,0 +1,75 @@
+// src/data/rides.js
+// Abhi backend nahi hai, isliye dummy data. Baad mein API se aayega.
+
+export const driver = {
+  id: "DRV1001",
+  name: "Rahul Sharma",
+  phone: "9876543210",
+  rating: 4.8,
+  trips: 1240,
+  car: "Swift Dzire",
+  carColor: "White",
+  plate: "UP 15 AB 1234",
+  rideType: "Go Comfort",
+  // Meerut ke aas-paas ki fake location (baad mein live GPS se aayegi)
+  location: { lat: 28.9845, lng: 77.7064 },
+};
+
+export const rides = [
+  {
+    id: "GR482911",
+    date: "2026-10-26",
+    pickup: "Sector 12 Market",
+    destination: "City Railway Station",
+    rideType: "Go Comfort",
+    fare: 219,
+    payment: "online",
+    status: "upcoming",
+  },
+  {
+    id: "GR482640",
+    date: "2026-10-22",
+    pickup: "City Mall",
+    destination: "Green Park Residency",
+    rideType: "Go Mini",
+    fare: 149,
+    payment: "cash",
+    status: "completed",
+    driver: "Rahul Sharma",
+    distance: "6.2 km",
+  },
+  {
+    id: "GR482377",
+    date: "2026-10-19",
+    pickup: "Green Park Residency",
+    destination: "Tech Park, Phase 2",
+    rideType: "Go Comfort",
+    fare: 289,
+    payment: "online",
+    status: "completed",
+    driver: "Amit Verma",
+    distance: "11.8 km",
+  },
+  {
+    id: "GR482105",
+    date: "2026-10-15",
+    pickup: "Airport Road",
+    destination: "Old Town Square",
+    rideType: "Go XL",
+    fare: 459,
+    payment: "online",
+    status: "cancelled",
+  },
+  {
+    id: "GR481822",
+    date: "2026-10-09",
+    pickup: "University Gate 2",
+    destination: "Central Library",
+    rideType: "Go Mini",
+    fare: 99,
+    payment: "cash",
+    status: "completed",
+    driver: "Sunil Kumar",
+    distance: "3.1 km",
+  },
+];

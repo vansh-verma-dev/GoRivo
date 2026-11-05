@@ -28,7 +28,7 @@ function HeroSection() {
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 md:gap-10 mt-4 w-full sm:w-auto">
           <button 
-          onClick={()=> navigate("/bookRide")}
+          onClick={()=> navigate("/passenger/bookRide")}
           className="flex gap-1 justify-center items-center px-6 sm:px-10 py-3 sm:py-4 rounded-2xl border bg-orange-500 text-white font-medium cursor-pointer">
             Book your ride <FaArrowRight />
           </button>

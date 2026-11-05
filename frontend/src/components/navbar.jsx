@@ -73,7 +73,7 @@ function Navbar() {
  
           <div className="flex items-center gap-6 sm:gap-10">
             <Link
-              to="/"
+              to="#"
               className="text-2xl font-extrabold tracking-tight text-orange-500 sm:text-3xl"
             >
               GoRivo<span className="text-gray-900">.</span>

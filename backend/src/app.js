@@ -5,6 +5,7 @@ const loggerMiddleware = require("./middleware/loggerMiddleware");
 const notFoundMiddleware = require("./middleware/notFoundMiddleware");
 const errorMiddleware = require("./middleware/errorMiddlewae");
 const authRouter = require("./routes/auth.routes");
+const RideRouter = require("./routes/ride.routes");
 
 const app = express();
 
@@ -29,6 +30,8 @@ app.get("/", (req, res) => {
 // Auth Routes
 app.use("/api/auth", authRouter);
 
+app.use("/api", RideRouter)
+
 
 // Not Found Middleware
 app.use(notFoundMiddleware);
@@ -37,4 +40,3 @@ app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 module.exports = app;
- 
