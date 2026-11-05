@@ -64,12 +64,7 @@ const rideSchema = new Schema(
     rideType: {
       type: String,
       required: true,
-      enum: [
-        "go-bike",
-        "go-auto",
-        "go-comfort",
-        "go-premium",
-      ],
+      enum: ["go-mini", "go-comfort", "go-xl"],
     },
 
     distanceKm: {

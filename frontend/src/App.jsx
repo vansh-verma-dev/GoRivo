@@ -23,7 +23,7 @@ function App() {
       
       <Route path="/passenger/profile" element={<ProfilePage />} />
       <Route path="/passenger/bookRide" element={<BookRide />} />
-      <Route path="/passenger/BookConform" element={<BookingConfirmation />} />
+      <Route path="/passenger/BookConform/:rideId" element={<BookingConfirmation />} />
       <Route path="/passenger/liveRideTrack" element={<LiveRideTracking />} />
       <Route path="/passenger/rideHistory" element={<RideHistory />} />
       <Route path="/HelpSupport" element={<HelpSupport />} />

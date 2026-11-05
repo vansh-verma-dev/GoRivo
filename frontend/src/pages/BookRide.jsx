@@ -53,7 +53,6 @@ const rideOptions = [
 
 function BookRide() {
   const navigate = useNavigate();
-  const [isBooking, setIsBooking] = useState(false);
 
   // input ka text
   const [pickup, setPickup] = useState("");
@@ -71,6 +70,7 @@ function BookRide() {
   const [selectedRide, setSelectedRide] = useState("go-comfort");
   const [payment, setPayment] = useState("cash");
   const [error, setError] = useState("");
+  const [isBooking, setIsBooking] = useState(false);
 
   const selected = rideOptions.find((ride) => ride.id === selectedRide);
 
@@ -102,7 +102,7 @@ function BookRide() {
         setDistanceKm(r.distance / 1000);
         setDurationMin(Math.round(r.duration / 60));
       })
-      .catch(() => { });
+      .catch(() => {});
 
     return () => controller.abort();
   }, [pickupPoint, destinationPoint]);
@@ -149,64 +149,63 @@ function BookRide() {
       return;
     }
 
-    if (isBooking) return;
+    if (!distanceKm || !durationMin) {
+      setError("Please wait until route details are calculated.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Please login to book a ride.");
+      return;
+    }
+
+  
+    const bookingData = {
+      pickup: pickupPoint,
+      destination: destinationPoint,
+      rideType: selected.id,
+      distanceKm,
+      durationMin,
+      fare: getPrice(selected),
+      payment ,
+    };
+    console.log("Sending to backend:", bookingData);
 
     try {
       setIsBooking(true);
       setError("");
 
-      const token = localStorage.getItem("token");
-
-      const bookingData = {
-        pickup: pickupPoint,
-        destination: destinationPoint,
-        rideType: selected.id,
-        payment: {
-          method: payment,
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/ride`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      };
-
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/ride`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(bookingData),
-        }
-      );
+        body: JSON.stringify(bookingData),
+      });
 
       const result = await response.json();
+      console.log("Backend response:", result);
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to create booking");
       }
 
-      // Backend se actual booking details
       const booking = result.data;
 
-      // Confirmation page par navigate
-      navigate("/passenger/BookConform", {
-        state: {
-          bookingId: booking.bookingId,
-          rideId: booking._id,
-          pickup: booking.pickup.name,
-          destination: booking.destination.name,
-          ride: {
-            name: selected.name,
-            time: selected.time,
-            price: booking.fare,
-          },
-          payment: booking.payment.method,
-          status: booking.status,
-        },
+      navigate(`/passenger/BookConform/${booking._id}`, {
+        state: { otp: booking.otp },
       });
-
     } catch (err) {
       console.error("Ride booking error:", err);
-      setError(err.message || "Something went wrong. Please try again.");
+
+      
+      if (err.message === "Failed to fetch") {
+        setError("Cannot reach the server. Check that the backend is running.");
+      } else {
+        setError(err.message || "Something went wrong.");
+      }
     } finally {
       setIsBooking(false);
     }
@@ -315,16 +314,18 @@ function BookRide() {
                       key={ride.id}
                       type="button"
                       onClick={() => setSelectedRide(ride.id)}
-                      className={`flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition ${isSelected
-                        ? "border-orange-500 bg-orange-50/50"
-                        : "border-gray-100 hover:border-gray-300"
-                        }`}
+                      className={`flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition ${
+                        isSelected
+                          ? "border-orange-500 bg-orange-50/50"
+                          : "border-gray-100 hover:border-gray-300"
+                      }`}
                     >
                       <span
-                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-2xl ${isSelected
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-100 text-gray-700"
-                          }`}
+                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-2xl ${
+                          isSelected
+                            ? "bg-orange-500 text-white"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
                       >
                         {ride.icon}
                       </span>
@@ -443,10 +444,11 @@ function BookRide() {
                     key={p.id}
                     type="button"
                     onClick={() => setPayment(p.id)}
-                    className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition ${payment === p.id
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-800"
-                      }`}
+                    className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition ${
+                      payment === p.id
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-500 hover:text-gray-800"
+                    }`}
                   >
                     {p.icon}
                     {p.label}
@@ -460,7 +462,7 @@ function BookRide() {
                 disabled={isBooking}
                 className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 py-4 font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isBooking ? "Creating Booking..." : "Confirm booking"}
+                {isBooking ? "Creating booking..." : "Confirm booking"}
                 {!isBooking && <FaArrowRight />}
               </button>
             </section>
