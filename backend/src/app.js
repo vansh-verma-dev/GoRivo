@@ -18,7 +18,7 @@ app.use(loggerMiddleware);
 app.use(cors({
     origin: [
         "http://localhost:5173",
-        "https://go-rivo.vercel.app"
+        "https://gorivoapp.netlify.app/"
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
