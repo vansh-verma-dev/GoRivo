@@ -78,7 +78,8 @@ const UpdateStatus = async (req, res) => {
       });
     }
 
-    const ride = await Ride.findById(rideId);
+    // +otp zaroori hai, taaki PIN compare ho sake
+    const ride = await Ride.findById(rideId).select("+otp");
 
     if (!ride) {
       return res.status(404).json({
@@ -115,10 +116,25 @@ const UpdateStatus = async (req, res) => {
         });
       }
 
-      return res.status(400).json({
-        success: false,
-        message: "Ride PIN verification is not implemented yet",
-      });
+      // 5 galat try ke baad block (4 digit PIN brute-force na ho)
+      if ((ride.otpAttempts || 0) >= 5) {
+        return res.status(429).json({
+          success: false,
+          message: "Too many wrong attempts. Ask passenger to rebook.",
+        });
+      }
+
+      if (String(ride.otp) !== String(otp)) {
+        ride.otpAttempts = (ride.otpAttempts || 0) + 1;
+        await ride.save();
+
+        return res.status(400).json({
+          success: false,
+          message: "Incorrect PIN",
+        });
+      }
+
+      ride.startedAt = new Date();
     }
 
     ride.status = status;
@@ -129,10 +145,14 @@ const UpdateStatus = async (req, res) => {
 
     await ride.save();
 
+    // Driver ko response me OTP mat bhejo
+    const rideData = ride.toObject();
+    delete rideData.otp;
+
     return res.status(200).json({
       success: true,
       message: "Ride status updated successfully",
-      data: ride,
+      data: rideData,
     });
   } catch (error) {
     return res.status(500).json({
