@@ -1,9 +1,19 @@
 
 const Ride = require("../module/ride.module");
+const crypto = require("crypto");
+const { promisify } = require("util");
+
+const scrypt = promisify(crypto.scrypt);
+
+const hashOTP = async (otp) => {
+    const salt = crypto.randomBytes(16).toString("hex");
+    const hash = await scrypt(otp, salt, 64);
+
+    return `${salt}:${hash.toString("hex")}`;
+};
 
 const createRide = async (req, res) => {
     try {
-
         const {
             pickup,
             destination,
@@ -14,7 +24,6 @@ const createRide = async (req, res) => {
             fare,
         } = req.body;
 
-        // Validate required fields
         if (
             !pickup?.name ||
             pickup.lat == null ||
@@ -34,12 +43,7 @@ const createRide = async (req, res) => {
             });
         }
 
-        console.log("Authorization:", req.headers.authorization);
-        console.log("Authenticated User:", req.user);
-
         const passengerId = req.user?.id || req.user?._id;
-
-        console.log("Passenger ID:", passengerId);
 
         if (!passengerId) {
             return res.status(401).json({
@@ -48,7 +52,6 @@ const createRide = async (req, res) => {
             });
         }
 
-        // Validate fare and ride details
         if (
             !Number.isFinite(distanceKm) ||
             !Number.isFinite(durationMin) ||
@@ -63,7 +66,9 @@ const createRide = async (req, res) => {
             });
         }
 
-        // Create booking
+        const otp = String(crypto.randomInt(1000, 10000));
+        const otpHash = await hashOTP(otp);
+
         const ride = await Ride.create({
             passenger: passengerId,
             pickup,
@@ -75,18 +80,23 @@ const createRide = async (req, res) => {
             distanceKm,
             durationMin,
             fare,
+            otpHash,
             status: "searching",
             matching: {
                 status: "pending",
             },
         });
 
-
+        const rideData = ride.toObject();
+        delete rideData.otpHash;
 
         return res.status(201).json({
             success: true,
             message: "Ride booking created successfully",
-            data: ride,
+            data: {
+                ...rideData,
+                otp,
+            },
         });
 
     } catch (error) {
@@ -98,8 +108,8 @@ const createRide = async (req, res) => {
             error: error.message,
         });
     }
-
 };
+
 
 const GetRide = async (req, res) => {
     try {
