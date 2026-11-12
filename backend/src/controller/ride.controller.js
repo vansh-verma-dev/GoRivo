@@ -1,16 +1,6 @@
 
 const Ride = require("../module/ride.module");
 const crypto = require("crypto");
-const { promisify } = require("util");
-
-const scrypt = promisify(crypto.scrypt);
-
-const hashOTP = async (otp) => {
-    const salt = crypto.randomBytes(16).toString("hex");
-    const hash = await scrypt(otp, salt, 64);
-
-    return `${salt}:${hash.toString("hex")}`;
-};
 
 const createRide = async (req, res) => {
     try {
@@ -24,6 +14,7 @@ const createRide = async (req, res) => {
             fare,
         } = req.body;
 
+        // Validate required fields
         if (
             !pickup?.name ||
             pickup.lat == null ||
@@ -52,6 +43,7 @@ const createRide = async (req, res) => {
             });
         }
 
+        // Validate ride details
         if (
             !Number.isFinite(distanceKm) ||
             !Number.isFinite(durationMin) ||
@@ -66,9 +58,10 @@ const createRide = async (req, res) => {
             });
         }
 
+        // Generate 4-digit OTP
         const otp = String(crypto.randomInt(1000, 10000));
-        const otpHash = await hashOTP(otp);
 
+        // Create booking
         const ride = await Ride.create({
             passenger: passengerId,
             pickup,
@@ -80,23 +73,17 @@ const createRide = async (req, res) => {
             distanceKm,
             durationMin,
             fare,
-            otpHash,
+            otp,
             status: "searching",
             matching: {
                 status: "pending",
             },
         });
 
-        const rideData = ride.toObject();
-        delete rideData.otpHash;
-
         return res.status(201).json({
             success: true,
             message: "Ride booking created successfully",
-            data: {
-                ...rideData,
-                otp,
-            },
+            data: ride,
         });
 
     } catch (error) {

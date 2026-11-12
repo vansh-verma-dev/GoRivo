@@ -144,11 +144,10 @@ const rideSchema = new Schema(
       },
     },
 
-    otpHash: {
-      type: String,
-      default: null,
-      select: false,
-    },
+   otp: {
+    type: String,
+    required: true,
+},
 
     startedAt: Date,
     completedAt: Date,

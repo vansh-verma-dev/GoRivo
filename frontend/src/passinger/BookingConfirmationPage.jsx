@@ -90,7 +90,7 @@ function Skeleton({ className }) {
 function BookingConfirmation() {
   const { rideId } = useParams();
   const location = useLocation();
-  const otp = location.state?.otp; // sirf booking ke turant baad milta hai
+  const [otp, setOtp] = useState(location.state?.otp || "");
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -174,7 +174,7 @@ function BookingConfirmation() {
         const r = data.routes?.[0];
         if (r) setRoute(r.geometry.coordinates.map(([lng, lat]) => [lat, lng]));
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => controller.abort();
   }, [pLat, pLng, dLat, dLng]);
@@ -285,21 +285,22 @@ function BookingConfirmation() {
 
   const bookedAt = booking.createdAt
     ? new Date(booking.createdAt).toLocaleString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    })
     : "";
 
   const payment = booking.payment || {};
+  const rideOtp = booking.otp || otp;
   const StatusIcon =
     info.tone === "green"
       ? FaCircleCheck
       : info.tone === "red"
-      ? FaCircleExclamation
-      : FaClock;
+        ? FaCircleExclamation
+        : FaClock;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -321,6 +322,7 @@ function BookingConfirmation() {
                 Booking ID #{booking.bookingId}
                 {bookedAt && ` · ${bookedAt}`}
               </p>
+              
             </div>
             <span
               className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${tone.badge}`}
@@ -336,6 +338,14 @@ function BookingConfirmation() {
           )}
         </section>
 
+        {rideOtp && ["searching", "accepted", "arriving"].includes(status) && (
+          <Card title="Ride PIN">
+            <div className="flex items-center justify-between rounded-xl bg-gray-900 px-4 py-3 text-white">
+              <span className="text-sm text-gray-300">Share this PIN with your driver</span>
+              <span className="text-2xl font-bold tracking-widest">{rideOtp}</span>
+            </div>
+          </Card>
+        )}
         <div className="grid items-start gap-5 lg:grid-cols-[1fr_380px]">
           {/* ---------- Left ---------- */}
           <div className="space-y-5">
@@ -534,9 +544,8 @@ function BookingConfirmation() {
                   <div className="flex items-center justify-between py-2 text-sm">
                     <span className="text-gray-500">Payment status</span>
                     <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
-                        paymentTone[payment.status] || "bg-gray-100"
-                      }`}
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${paymentTone[payment.status] || "bg-gray-100"
+                        }`}
                     >
                       {payment.status}
                     </span>

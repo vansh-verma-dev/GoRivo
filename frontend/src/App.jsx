@@ -33,7 +33,7 @@ function App() {
       <Route path="/passenger/rideHistory" element={<RideHistory />} />
       <Route path="/HelpSupport" element={<HelpSupport />} />
       {/* <Route path="/driver/home" element={<DriverHome/>} /> */}
-      <Route path="/driver/dashboard" element={<DriverDashboard/>} />
+      <Route path="/driver/home" element={<DriverDashboard/>} />
       <Route path="/driver/rideRequest" element={<DriverRideRequest/>} />
       <Route path="/driver/trip" element={<DriverTrip/>} />
       <Route path="/driver/rideCompleted" element={<DriverRideCompleted />} />
