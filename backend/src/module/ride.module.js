@@ -144,10 +144,10 @@ const rideSchema = new Schema(
       },
     },
 
-   otp: {
-    type: String,
-    required: true,
-},
+    otp: {
+      type: String,
+      required: true,
+    },
 
     startedAt: Date,
     completedAt: Date,
@@ -174,7 +174,7 @@ rideSchema.pre("validate", function () {
       Math.random().toString(36).slice(2, 7).toUpperCase();
   }
 
- 
+
 });
 
 rideSchema.index({ passenger: 1, createdAt: -1 });

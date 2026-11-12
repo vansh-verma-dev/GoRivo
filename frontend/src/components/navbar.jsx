@@ -11,11 +11,7 @@ import { FaCarRear, FaBars, FaXmark } from "react-icons/fa6";
 import { FaRegUser } from "react-icons/fa";
 import { FaRightFromBracket } from "react-icons/fa6";
 import { GiReceiveMoney } from "react-icons/gi";
-
-const links = [
-  { to: "/trip", label: "Trip", icon: FaCarRear },
-  { to: "/rent", label: "Rent", icon: GiReceiveMoney },
-];
+ 
 
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -27,7 +23,7 @@ function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  // Route change hone par mobile menu band
+ 
   useEffect(() => {
     setOpen(false);
     setShowLogoutConfirm(false);
@@ -48,7 +44,7 @@ function Navbar() {
     };
   }, []);
 
-  // User confirmation ke baad hi logout
+ 
   const handleLogout = () => {
     localStorage.removeItem("token");
 
@@ -78,15 +74,7 @@ function Navbar() {
             >
               GoRivo<span className="text-gray-900">.</span>
             </Link>
-
-            <div className="hidden items-center gap-2 md:flex">
-              {links.map(({ to, label, icon: Icon }) => (
-                <NavLink key={to} to={to} className={navLinkClass}>
-                  <Icon />
-                  <span>{label}</span>
-                </NavLink>
-              ))}
-            </div>
+ 
           </div>
 
    
@@ -94,7 +82,7 @@ function Navbar() {
             {isLoggedIn ? (
               <>
                 <Link
-                  to="/profile"
+                  to="/passenger/profile"
                   className="flex items-center gap-2 rounded-full px-4 py-2 text-gray-700 transition hover:bg-orange-50 hover:text-orange-600"
                 >
                   <FaRegUser />
@@ -161,53 +149,7 @@ function Navbar() {
             open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
           }`}
         >
-          <div className="overflow-hidden">
-            <div className="flex flex-col gap-1 border-t border-gray-100 px-4 pb-4 pt-3 text-gray-800 sm:px-8">
-              {links.map(({ to, label, icon: Icon }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  tabIndex={open ? 0 : -1}
-                  className={navLinkClass}
-                >
-                  <Icon />
-                  <span>{label}</span>
-                </NavLink>
-              ))}
-
-              {isLoggedIn ? (
-                <>
-                  <Link
-                    to="/profile"
-                    tabIndex={open ? 0 : -1}
-                    className="flex items-center gap-3 rounded-xl px-3 py-3 transition hover:bg-orange-50 hover:text-orange-600"
-                  >
-                    <FaRegUser />
-                    <span>Profile</span>
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowLogoutConfirm(true)}
-                    tabIndex={open ? 0 : -1}
-                    className="flex items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-orange-50 hover:text-orange-600"
-                  >
-                    <FaRightFromBracket />
-                    <span>Logout</span>
-                  </button>
-                </>
-              ) : (
-                <Link
-                  to="/login"
-                  tabIndex={open ? 0 : -1}
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 transition hover:bg-orange-50 hover:text-orange-600"
-                >
-                  <FaRegUser />
-                  <span>Log in</span>
-                </Link>
-              )}
-            </div>
-          </div>
+         
         </div>
       </header>
 
