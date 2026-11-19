@@ -42,13 +42,13 @@ function LoginPage() {
 
             localStorage.setItem("token", result.token);
 
-            const role = result.user.role; // backend ke hisaab se check kar lena
+            const role = result.user.role;  
 
             localStorage.setItem("role", role);
             setMessage("Login successful!");
 
             if (role === "driver") {
-                navigate("/driver/home");
+                navigate("/driver/dashboard");
             } else {
                 navigate("/passenger/bookRide");
             }

@@ -13,7 +13,8 @@ export function getAuth() {
       return null;
     }
 
-    const role = payload.role || localStorage.getItem("role"); // <- yahan field naam badal sakte ho
+    const role = payload.role || localStorage.getItem("role");
+    
     return { role };
   } catch {
     localStorage.removeItem("token");
