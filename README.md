@@ -1,141 +1,34 @@
-﻿# GoRivo — Ride Booking Platform
+# GoRivo -Ride Booking Application
+A ride-booking web app (Uber-style) built with the MERN stack. Passengers can book rides and drivers can accept and manage them.
 
-GoRivo is a ride-booking web application designed to connect passengers with drivers through a simple and user-friendly interface.
-
-**Project Status:** Currently in development.
-
-##  Overview
-
-GoRivo aims to make ride booking convenient for passengers and provide drivers with a dedicated platform to manage their rides.
-
-The project is being developed using React, Node.js, Express.js, and MongoDB.
-
-- **Live Website:** https://gorivoapp.netlify.app/
-- **Backend:** https://gorivo.onrender.com
-- **GitHub Repository:** https://github.com/vansh-verma-dev/GoRivo
+**Live:** [go-rivo.vercel.app](https://go-rivo.vercel.app)
 
 ## Features
 
-### Passenger Features
+**Passenger**
+- Sign up / login (JWT authentication)
+- Book a ride
+- View ride details
+- Ride history
 
-- Home Page
-- User Signup and Login
-- Passenger Profile
-- Book a Ride
-- Booking Confirmation
-- Live Ride Tracking UI
-- Ride History UI
-- Help and Support
-- 404 Not Found Page
+**Driver**
+- Accept ride requests
+- Update ride status
+- Ride history
+- Dashboard
 
-*Note: Some features are currently frontend-only and will be connected to the backend as development progresses.*
+## Tech Stack
 
-### Authentication
+- **Frontend:** React.js, Tailwind CSS
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB, Mongoose
+- **Auth:** JWT
+- **Deployment:** Vercel (frontend), Render (backend)
 
-- User registration API
-- User login API
-- Token-based authentication flow
-- Authenticated user profile API
-
-### Planned Features
-
-- Driver registration and login
-- Driver profile and document verification
-- Driver online/offline status
-- Ride request acceptance and rejection
-- Start and complete ride
-- Ride history and earnings
-- Passenger ratings and feedback
-- Database integration for ride management
-
-##  Tech Stack
-
-### Frontend
-- React.js
-- Vite
-- Tailwind CSS
-- React Router DOM
-
-### Backend
-- Node.js
-- Express.js
-- MongoDB
-- MongoDB Atlas
-- Token-based authentication
-
-### Tools and Deployment
-- Git
-- GitHub
-- Vercel
-- Render
-
-##  Project Structure
-
-```text
-GoRivo/
-├── frontend/
-│   └── src/
-│       ├── components/
-│       ├── pages/
-│       ├── passinger/
-│       └── App.jsx
-├── backend/
-│   └── ...
-└── README.md
-```
-
-##  Installation and Setup
-
-### Prerequisites
-
-- Node.js
-- npm
-- Git
-- MongoDB connection for backend functionality
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/vansh-verma-dev/GoRivo.git
-cd GoRivo
-```
-
-### 2. Setup Frontend
-
-```bash
-cd frontend
-npm install
-```
-
-
-## 🗺️ Development Roadmap
-
-- [x] Passenger frontend interfaces
-- [x] Initial authentication APIs
-- [ ] Complete driver frontend interfaces
-- [ ] Finalize database models
-- [ ] Implement ride booking APIs
-- [ ] Connect booking confirmation to real data
-- [ ] Implement driver ride request workflow
-- [ ] Implement ride status updates
-- [ ] Connect ride history to the database
-- [ ] Add ratings and feedback
-- [ ] Test the complete passenger and driver journey
-
-## 🔐 Security
-
-- Keep database credentials and authentication secrets private.
-- Validate and sanitize incoming API data.
-- Protect authenticated routes.
-- Apply role-based authorization for passengers and drivers.
-
-##  Author
+ 
+## Author
 
 **Vansh Verma**
-
-GitHub: https://github.com/vansh-verma-dev
-Portfolio: 
-
----
-
-**GoRivo** — Building a smarter ride-booking experience. ❤️
+- GitHub: [vansh-verma-dev](https://github.com/vansh-verma-dev)
+- LinkedIn: [vansh-verma](https://linkedin.com/in/vansh-verma-b2a6a3373)
+- Portfolio: [vansh-dev-blue.vercel.app](https://vansh-dev-blue.vercel.app)
