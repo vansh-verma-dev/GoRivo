@@ -1,5 +1,5 @@
 import DriverPartnerSection from "../components/driverPartnerSection";
-import Footer from "../components/footer";
+import Footer from "../components/footer.jsx";
 import HeroSection from "../components/heroSection";
 import HowItWorks from "../components/howItWorks";
 import Navbar from "../components/navbar";
