@@ -32,7 +32,7 @@ export const logoutApi = async () => {
   try {
     return await request("/auth/logout", { method: "POST" });
   } finally {
-    // server fail ho tab bhi local logout ho jaye
+   
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     window.dispatchEvent(new Event("auth-change"));
