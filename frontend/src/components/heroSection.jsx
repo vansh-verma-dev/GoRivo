@@ -10,14 +10,30 @@ const HeroSection = () => {
   const [rideType, setRideType] = useState("now");
   const navigate = useNavigate();
 
+  const isLoggedIn = () => Boolean(localStorage.getItem("token"));
+
+  const requireAuthOrRun = (action) => {
+    if (!isLoggedIn()) {
+      navigate("/login");
+      return;
+    }
+    action?.();
+  };
+
   const handleSwapLocations = () => {
-    setPickup(dropoff);
-    setDropoff(pickup);
+    requireAuthOrRun(() => {
+      setPickup(dropoff);
+      setDropoff(pickup);
+    });
   };
 
   const handleSearchRide = (e) => {
     e.preventDefault();
-    navigate("/login");
+    requireAuthOrRun(() => {
+      navigate("/passenger/bookRide", {
+        state: { pickup, dropoff, rideType },
+      });
+    });
   };
 
   const tabClass = (type) =>
@@ -58,14 +74,14 @@ const HeroSection = () => {
               <div className="mb-5 flex w-fit items-center gap-1 rounded-xl bg-gray-100 p-1">
                 <button
                   type="button"
-                  onClick={() => setRideType("now")}
+                  onClick={() => requireAuthOrRun(() => setRideType("now"))}
                   className={tabClass("now")}
                 >
                   Ride Now
                 </button>
                 <button
                   type="button"
-                  onClick={() => setRideType("schedule")}
+                  onClick={() => requireAuthOrRun(() => setRideType("schedule"))}
                   className={tabClass("schedule")}
                 >
                   <FiClock className="text-orange-500" />
@@ -86,6 +102,7 @@ const HeroSection = () => {
                   />
                   <button
                     type="button"
+                    onClick={() => requireAuthOrRun()}
                     title="Use current location"
                     className="ml-2 text-gray-400 transition hover:text-orange-500 cursor-pointer"
                   >

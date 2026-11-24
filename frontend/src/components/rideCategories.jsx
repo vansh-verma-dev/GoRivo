@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FaMotorcycle,
   FaCarSide,
@@ -56,14 +57,12 @@ const rides = [
   },
 ];
 
-const RideCategories = ({ onSelectRide }) => {
-  const [selectedId, setSelectedId] = useState('mini');
+const RideCategories = () => {
+  const [selectedId] = useState('mini');
+  const navigate = useNavigate();
 
-  const handleSelect = (ride) => {
-    setSelectedId(ride.id);
-    if (onSelectRide) {
-      onSelectRide(ride);
-    }
+  const goToLogin = () => {
+    navigate('/login');
   };
 
   const activeRide = rides.find((r) => r.id === selectedId) || rides[2];
@@ -105,7 +104,7 @@ const RideCategories = ({ onSelectRide }) => {
             return (
               <div
                 key={ride.id}
-                onClick={() => handleSelect(ride)}
+                onClick={goToLogin}
                 className={`group relative rounded-2xl p-6 transition-all duration-200 cursor-pointer border bg-white flex flex-col justify-between ${
                   isSelected
                     ? 'border-orange-500 ring-2 ring-orange-500/20 shadow-lg -translate-y-1'
@@ -199,7 +198,7 @@ const RideCategories = ({ onSelectRide }) => {
           </div>
           <button
             type="button"
-            onClick={() => console.log('Proceeding with:', activeRide)}
+            onClick={goToLogin}
             className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm shadow-orange-500/20"
           >
             <span>Continue with {activeRide.name}</span>
