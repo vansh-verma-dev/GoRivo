@@ -28,7 +28,11 @@ const DriverHistory = () => {
       try {
         setError("");
         const res = await getDriverRidesApi();
-        setRides(res.data || []);
+        setRides(
+          (res.data || []).filter(
+            (r) => !["searching", "no_driver_found"].includes(r.status)
+          )
+        );
       } catch (err) {
         console.error("Driver history error:", err);
         if (err.status === 401) {
@@ -85,11 +89,10 @@ const DriverHistory = () => {
                   key={tab}
                   type="button"
                   onClick={() => setFilter(tab)}
-                  className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-bold capitalize transition ${
-                    filter === tab
+                  className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-bold capitalize transition ${filter === tab
                       ? "bg-orange-500 text-white"
                       : "text-gray-600 hover:text-gray-900"
-                  }`}
+                    }`}
                 >
                   {tab}
                 </button>
@@ -126,18 +129,17 @@ const DriverHistory = () => {
                 const Wrapper = isActive ? Link : "div";
                 const wrapperProps = isActive
                   ? {
-                      to: `/driver/driverTrip/${ride._id}`,
-                      state: { ride },
-                    }
+                    to: `/driver/driverTrip/${ride._id}`,
+                    state: { ride },
+                  }
                   : {};
 
                 return (
                   <Wrapper
                     key={ride._id}
                     {...wrapperProps}
-                    className={`flex flex-col justify-between gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:flex-row sm:items-center ${
-                      isActive ? "transition hover:border-orange-300" : ""
-                    }`}
+                    className={`flex flex-col justify-between gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:flex-row sm:items-center ${isActive ? "transition hover:border-orange-300" : ""
+                      }`}
                   >
                     <div className="min-w-0 space-y-1.5">
                       <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400">
@@ -149,12 +151,12 @@ const DriverHistory = () => {
                           <FiClock className="text-orange-500" />
                           {ride.createdAt
                             ? new Date(ride.createdAt).toLocaleString("en-IN", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
                             : "-"}
                         </span>
                         <span>•</span>

@@ -165,7 +165,12 @@ const UpdateStatus = async (req, res) => {
 
 const GetDriverRides = async (req, res, next) => {
   try {
-    const rides = await Ride.find({ driver: req.user._id }).sort({ createdAt: -1 });
+    const rides = await Ride.find({
+      driver: req.user._id,                  
+      status: { $ne: "searching" },          
+    })
+      .sort({ createdAt: -1 })
+      .populate("passenger", "name");
 
     res.status(200).json({ success: true, count: rides.length, data: rides });
   } catch (error) {
