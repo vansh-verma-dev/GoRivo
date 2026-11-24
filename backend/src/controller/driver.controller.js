@@ -1,16 +1,22 @@
-
 const Ride = require("../module/ride.module");
+const mongoose = require("mongoose");
 
+
+const getDriverId = (req) => req.user?.id || req.user?._id;
+
+// 1. Get all open rides searching for a driver
 const GetAvailableRides = async (req, res) => {
   try {
     const rides = await Ride.find({
       status: "searching",
       driver: null,
-    }).sort({ createdAt: -1 });
+    })
+      .populate("passenger", "name phone")
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
-      message: "Rides fetched successfully",
+      message: "Available rides fetched successfully",
       totalRides: rides.length,
       data: rides,
     });
@@ -23,10 +29,25 @@ const GetAvailableRides = async (req, res) => {
   }
 };
 
+// 2. Accept a ride (blocks accepting if driver already has an active trip)
 const AcceptRide = async (req, res) => {
   try {
     const { rideId } = req.params;
-    const driverId = req.user.id;
+    const driverId = getDriverId(req);
+
+    // Check if driver already has an ongoing ride
+    const existingActiveRide = await Ride.findOne({
+      driver: driverId,
+      status: { $in: ["accepted", "arriving", "started"] },
+    });
+
+    if (existingActiveRide) {
+      return res.status(400).json({
+        success: false,
+        message: "Complete your current active ride before accepting a new one.",
+        activeRideId: existingActiveRide._id,
+      });
+    }
 
     const ride = await Ride.findOneAndUpdate(
       {
@@ -38,15 +59,16 @@ const AcceptRide = async (req, res) => {
         $set: {
           driver: driverId,
           status: "accepted",
+          acceptedAt: new Date(),
         },
       },
       { new: true }
-    );
+    ).populate("passenger", "name phone");
 
     if (!ride) {
       return res.status(400).json({
         success: false,
-        message: "Ride is not available",
+        message: "Ride is no longer available",
       });
     }
 
@@ -64,10 +86,12 @@ const AcceptRide = async (req, res) => {
   }
 };
 
+// 3. Update active ride status (arriving -> started -> completed)
 const UpdateStatus = async (req, res) => {
   try {
     const { rideId } = req.params;
     const { status, otp } = req.body;
+    const driverId = getDriverId(req);
 
     const allowedStatuses = ["arriving", "started", "completed"];
 
@@ -78,7 +102,6 @@ const UpdateStatus = async (req, res) => {
       });
     }
 
-    // +otp zaroori hai, taaki PIN compare ho sake
     const ride = await Ride.findById(rideId).select("+otp");
 
     if (!ride) {
@@ -88,7 +111,7 @@ const UpdateStatus = async (req, res) => {
       });
     }
 
-    if (ride.driver?.toString() !== req.user.id) {
+    if (ride.driver?.toString() !== String(driverId)) {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to update this ride",
@@ -116,7 +139,6 @@ const UpdateStatus = async (req, res) => {
         });
       }
 
-      // 5 galat try ke baad block (4 digit PIN brute-force na ho)
       if ((ride.otpAttempts || 0) >= 5) {
         return res.status(429).json({
           success: false,
@@ -144,8 +166,8 @@ const UpdateStatus = async (req, res) => {
     }
 
     await ride.save();
+    await ride.populate("passenger", "name phone");
 
-    // Driver ko response me OTP mat bhejo
     const rideData = ride.toObject();
     delete rideData.otp;
 
@@ -163,23 +185,56 @@ const UpdateStatus = async (req, res) => {
   }
 };
 
+// 4. Get Driver's Currently Active Ride (for Driver Dashboard)
+const GetDriverActiveRide = async (req, res) => {
+  try {
+    const driverId = getDriverId(req);
+
+    const activeRide = await Ride.findOne({
+      driver: driverId,
+      status: { $in: ["accepted", "arriving", "started"] },
+    })
+      .populate("passenger", "name phone")
+      .sort({ updatedAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: activeRide || null,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch active ride",
+      error: error.message,
+    });
+  }
+};
+
 const GetDriverRides = async (req, res, next) => {
   try {
-    const rides = await Ride.find({
-      driver: req.user._id,                  
-      status: { $ne: "searching" },          
-    })
-      .sort({ createdAt: -1 })
-      .populate("passenger", "name");
+    console.log("REQ.USER:", req.user);
+    console.log("REQ.QUERY:", req.query);
 
-    res.status(200).json({ success: true, count: rides.length, data: rides });
+    const rawDriverId =
+      req.user?.id || req.user?._id || req.user?.userId || req.user?.driverId;
+
+    const rides = await Ride.find({ driver: rawDriverId }).sort({ createdAt: -1 });
+    console.log("FOUND RIDES COUNT:", rides.length);
+
+    return res.status(200).json({
+      success: true,
+      count: rides.length,
+      data: rides,
+    });
   } catch (error) {
     next(error);
   }
 };
+
 module.exports = {
   GetAvailableRides,
   AcceptRide,
   UpdateStatus,
-  GetDriverRides
+  GetDriverActiveRide,
+  GetDriverRides,
 };

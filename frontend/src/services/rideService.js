@@ -2,21 +2,17 @@ import request from "./api";
 
 // ================= PASSENGER RIDE APIs =================
 
-// POST /api/ride -> createRide
 export const createRideApi = (ridePayload) =>
   request("/ride", {
     method: "POST",
     body: JSON.stringify(ridePayload),
   });
 
-// GET /api/ride -> GetRide
 export const getMyRidesApi = () => request("/ride", { method: "GET" });
 
-// GET /api/ride/:rideId -> SingleRideDetails
 export const getSingleRideApi = (rideId) =>
   request(`/ride/${rideId}`, { method: "GET" });
 
-// PATCH /api/ride/:rideId/cancel -> CancelRide
 export const cancelRideApi = (rideId, cancellationReason) =>
   request(`/ride/${rideId}/cancel`, {
     method: "PATCH",
@@ -25,19 +21,17 @@ export const cancelRideApi = (rideId, cancellationReason) =>
 
 // ================= DRIVER RIDE APIs =================
 
-// GET /api/drive/ride -> GetAvailableRides
 export const getAvailableRidesApi = () =>
   request("/drive/ride", { method: "GET" });
 
-// GET /api/drive/my-rides -> GetDriverRides (driver ki apni accept ki hui rides)
-export const getDriverRidesApi = () =>
-  request("/drive/my-rides", { method: "GET" });
+export const getDriverRidesApi = (status = "") => {
+  const query = status && status !== "all" ? `?status=${status}` : "";
+  return request(`/drive/my-rides${query}`, { method: "GET" });
+};
 
-// PATCH /api/drive/:rideId/accept -> AcceptRide
 export const acceptRideApi = (rideId) =>
   request(`/drive/${rideId}/accept`, { method: "PATCH" });
 
-// PATCH /api/drive/:rideId/status -> UpdateStatus
 export const updateRideStatusApi = (rideId, payload) =>
   request(`/drive/${rideId}/status`, {
     method: "PATCH",

@@ -4,12 +4,14 @@ const {
   GetAvailableRides,
   AcceptRide,
   UpdateStatus,
+  GetDriverActiveRide,
   GetDriverRides,
 } = require("../controller/driver.controller");
 
 const routes = express.Router();
 
 routes.get("/drive/ride", authMiddleware, GetAvailableRides);
+routes.get("/drive/active", authMiddleware, GetDriverActiveRide);
 routes.get("/drive/my-rides", authMiddleware, GetDriverRides);
 
 routes.patch("/drive/:rideId/accept", authMiddleware, AcceptRide);
