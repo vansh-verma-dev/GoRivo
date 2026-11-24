@@ -1,101 +1,89 @@
-import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn, FaArrowRight } from "react-icons/fa";
+import React from 'react';
+import { FiNavigation } from 'react-icons/fi';
+import { FaInstagram, FaTwitter, FaLinkedinIn, FaGithub } from 'react-icons/fa';
 
-import Footer_Banner from "../assits/GoRivo_footer_banner.png"
-
-
-const links = [
-    {
-        title: "Company",
-        items: ["About us", "Careers", "Blog", "Contact"]
-    },
-    {
-        title: "Rides",
-        items: ["Go Mini", "Go Comfort", "Go XL", "Outstation"]
-    },
-    {
-        title: "Support",
-        items: ["Help center", "Safety", "Terms of service", "Privacy policy"]
-    }
-]
-
-const socials = [
-    { icon: <FaFacebookF />, link: "#" },
-    { icon: <FaInstagram />, link: "#" },
-    { icon: <FaTwitter />, link: "#" },
-    { icon: <FaLinkedinIn />, link: "#" }
-]
-
-function Footer() {
-    return (
-        <footer className="w-full bg-white pt-6 pb-4">
-
-            {/* Banner */}
-            <div className="w-[90%]  mx-auto rounded-3xl overflow-hidden">
-                <img
-                    src={Footer_Banner}
-                    alt="Gorivo banner"
-                    className="w-full h-20  sm:h-auto block"
-                />
+const Footer = () => {
+  return (
+    <footer className="bg-white border-t border-gray-200/80 pt-14 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-gray-100">
+          {/* Brand Info */}
+          <div className="lg:col-span-2 space-y-4">
+            <a href="#" className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center">
+                <FiNavigation className="w-4 h-4 rotate-45" />
+              </div>
+              <span className="text-2xl font-extrabold tracking-tight text-gray-900">
+                Go<span className="text-orange-500">Rivo</span>
+              </span>
+            </a>
+            <p className="text-sm text-gray-500 max-w-sm leading-relaxed">
+              Fast, safe aur affordable city rides — har roz ke safar ko
+              banayein aasan GoRivo ke saath.
+            </p>
+            <div className="flex items-center gap-3 pt-1">
+              {[FaInstagram, FaTwitter, FaLinkedinIn, FaGithub].map(
+                (Icon, index) => (
+                  <a
+                    key={index}
+                    href="#"
+                    className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-orange-500 text-gray-600 hover:text-white flex items-center justify-center transition-colors"
+                  >
+                    <Icon className="w-4 h-4" />
+                  </a>
+                )
+              )}
             </div>
+          </div>
 
-            {/* Links */}
-            <div className="w-[90%] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
+          {/* Column 1 */}
+          <div>
+            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+              Company
+            </h4>
+            <ul className="space-y-2.5 text-sm text-gray-500">
+              <li><a href="#" className="hover:text-orange-500">About Us</a></li>
+              <li><a href="#" className="hover:text-orange-500">Careers</a></li>
+              <li><a href="#" className="hover:text-orange-500">Blog</a></li>
+              <li><a href="#" className="hover:text-orange-500">Press</a></li>
+            </ul>
+          </div>
 
-                {/* Brand */}
-                <div className="col-span-2 lg:col-span-1">
-                    <h2 className="text-3xl font-bold text-black">
-                        Go<span className="text-orange-500">rivo</span>
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-2 max-w-xs">
-                        Easy, safe and affordable rides for every plan. Book in a few taps.
-                    </p>
+          {/* Column 2 */}
+          <div>
+            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+              Products
+            </h4>
+            <ul className="space-y-2.5 text-sm text-gray-500">
+              <li><a href="#rides" className="hover:text-orange-500">GoRivo Moto</a></li>
+              <li><a href="#rides" className="hover:text-orange-500">GoRivo Auto</a></li>
+              <li><a href="#rides" className="hover:text-orange-500">GoRivo Mini</a></li>
+              <li><a href="#rides" className="hover:text-orange-500">GoRivo Prime</a></li>
+            </ul>
+          </div>
 
-                    <div className="flex gap-3 mt-4">
-                        {
-                            socials.map((data, i) => {
-                                return (
-                                    <a
-                                        key={i}
-                                        href={data.link}
-                                        className="w-9 h-9 flex items-center justify-center border border-orange-400 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white duration-300"
-                                    >
-                                        {data.icon}
-                                    </a>
-                                )
-                            })
-                        }
-                    </div>
-                </div>
+          {/* Column 3 */}
+          <div>
+            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+              Support
+            </h4>
+            <ul className="space-y-2.5 text-sm text-gray-500">
+              <li><a href="#safety" className="hover:text-orange-500">Safety Center</a></li>
+              <li><a href="#" className="hover:text-orange-500">Help & FAQs</a></li>
+              <li><a href="#" className="hover:text-orange-500">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-orange-500">Terms of Service</a></li>
+            </ul>
+          </div>
+        </div>
 
-                {
-                    links.map((data) => {
-                        return (
-                            <div key={data.title}>
-                                <h3 className="text-gray-800 font-semibold mb-3">{data.title}</h3>
-                                <ul className="flex flex-col gap-2 text-sm text-gray-500">
-                                    {
-                                        data.items.map((item) => {
-                                            return (
-                                                <li
-                                                    key={item}
-                                                    className="cursor-pointer hover:text-orange-500 duration-300"
-                                                >{item}</li>
-                                            )
-                                        })
-                                    }
-                                </ul>
-                            </div>
-                        )
-                    })
-                }
-            </div>
-
-            {/* Bottom */}
-            <div className="w-[90%] mx-auto border-t border-gray-200 mt-8 pt-4 text-center sm:text-left text-sm text-gray-500">
-                <p>© {new Date().getFullYear()} Gorivo. All rights reserved.</p>
-            </div>
-        </footer>
-    )
-}
+        {/* Bottom Copyright */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+          <p>© {new Date().getFullYear()} GoRivo Technologies. All rights reserved.</p>
+          <p>Made with React & Tailwind CSS</p>
+        </div>
+      </div>
+    </footer>
+  );
+};
 
 export default Footer;

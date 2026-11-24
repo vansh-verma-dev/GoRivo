@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
-
+    const [messageType, setMessageType] = useState("error");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -40,33 +40,45 @@ function LoginPage() {
                 throw new Error(result.message || "Login failed");
             }
 
-            localStorage.setItem("token", result.token);
+            const role = result.user?.role || result.role;
+            const userObj = result.user || { role, email: data.email };
 
-            const role = result.user.role;  
+            if (result.token) {
+                localStorage.setItem("token", result.token);
+            }
+            if (role) {
+                localStorage.setItem("role", role);
+            }
+            localStorage.setItem("user", JSON.stringify(userObj));
 
-            localStorage.setItem("role", role);
             setMessage("Login successful!");
+            setMessageType("success");
 
             if (role === "driver") {
-                navigate("/driver/dashboard");
+                navigate("/driver/availableRides", { replace: true });
             } else {
-                navigate("/passenger/bookRide");
+                navigate("/passenger/bookRide", { replace: true });
             }
-
         } catch (error) {
             console.error("Login error:", error);
-            setMessage(error.message);
+            setMessage(
+                error.message === "Failed to fetch"
+                    ? "Server se connection nahi ho pa raha. Please try again."
+                    : error.message
+            );
+            setMessageType("error");
         } finally {
             setLoading(false);
         }
-
-    }
+    };
 
     return (
         <div className="flex w-full min-h-screen bg-white">
             {/* --Left brand side--- */}
             <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-orange-500 to-orange-400 p-14 text-white">
-                <h1 className="text-4xl font-extrabold tracking-tight">GoRivo</h1>
+                <Link to="/">
+                    <h1 className="text-4xl font-extrabold tracking-tight">GoRivo</h1>
+                </Link>
 
                 <div>
                     <p className="text-5xl font-bold leading-tight">
@@ -88,9 +100,11 @@ function LoginPage() {
             {/* --Right form sided-- */}
             <div className="flex w-full lg:w-1/2 items-center justify-center px-6 py-10 sm:px-12">
                 <div className="w-full max-w-lg">
-                    <h1 className="text-3xl font-extrabold tracking-tight text-orange-500 lg:hidden">
-                        GoRivo
-                    </h1>
+                    <Link to="/" className="lg:hidden">
+                        <h1 className="text-3xl font-extrabold tracking-tight text-orange-500">
+                            GoRivo
+                        </h1>
+                    </Link>
 
                     <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900 lg:mt-0">
                         Log in to your account
@@ -99,8 +113,20 @@ function LoginPage() {
                         Enter your email and password to continue.
                     </p>
 
-                    <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+                    {message && (
+                        <p
+                            role="alert"
+                            className={`mt-5 rounded-lg p-3 text-sm font-medium ${
+                                messageType === "success"
+                                    ? "bg-green-50 text-green-700"
+                                    : "bg-red-50 text-red-700"
+                            }`}
+                        >
+                            {message}
+                        </p>
+                    )}
 
+                    <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
                         <div>
                             <label
                                 htmlFor="email"
@@ -132,12 +158,12 @@ function LoginPage() {
                                 >
                                     Password
                                 </label>
-                                <a
-                                    href="/forgot-password"
+                                <Link
+                                    to="/forgot-password"
                                     className="text-sm font-medium text-orange-500 hover:underline"
                                 >
                                     Forgot password?
-                                </a>
+                                </Link>
                             </div>
                             <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 transition focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-200">
                                 <span className="text-lg text-gray-400">
@@ -151,9 +177,15 @@ function LoginPage() {
                                     required
                                     className="w-full bg-transparent text-base text-gray-900 placeholder:text-gray-400 outline-none"
                                 />
-
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                    className="text-lg text-gray-400 hover:text-gray-600 cursor-pointer"
+                                >
+                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                </button>
                             </div>
-
                         </div>
 
                         {/* Remember me */}
@@ -169,7 +201,7 @@ function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full rounded-xl bg-orange-500 py-3.5 text-base font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="w-full rounded-xl bg-orange-500 py-3.5 text-base font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                         >
                             {loading ? "Logging in..." : "Log in"}
                         </button>
@@ -177,12 +209,12 @@ function LoginPage() {
 
                     <p className="mt-6 text-center text-sm text-gray-500">
                         New to GoRivo?{" "}
-                        <a
-                            href="/signup"
+                        <Link
+                            to="/signup"
                             className="font-semibold text-orange-500 hover:underline"
                         >
                             Create an account
-                        </a>
+                        </Link>
                     </p>
                 </div>
             </div>

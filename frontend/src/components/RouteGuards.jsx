@@ -1,17 +1,46 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { getAuth, homeFor } from "../utils/auth";
- 
-export function PublicOnly() {
-  const auth = getAuth();
-  return auth ? <Navigate to={homeFor(auth.role)} replace /> : <Outlet />;
-}
 
-// Sirf given role ke liye
-export function RequireRole({ role }) {
-  const auth = getAuth();
+const getAuthInfo = () => {
+  const token = localStorage.getItem("token");
+  const directRole = localStorage.getItem("role");
 
-  if (!auth) return <Navigate to="/" replace />;                    
-  if (auth.role !== role) return <Navigate to={homeFor(auth.role)} replace />;  
+  let parsedUser = null;
+  try {
+    const rawUser = localStorage.getItem("user");
+    parsedUser = rawUser ? JSON.parse(rawUser) : null;
+  } catch {
+    parsedUser = null;
+  }
+
+  const role = parsedUser?.role || directRole || null;
+  return { token, role };
+};
+
+export const PublicOnly = () => {
+  const { token, role } = getAuthInfo();
+
+  if (token && role) {
+    return (
+      <Navigate
+        to={role === "driver" ? "/driver/availableRides" : "/passenger/bookRide"}
+        replace
+      />
+    );
+  }
 
   return <Outlet />;
-}
+};
+
+export const RequireRole = ({ role: requiredRole }) => {
+  const { token, role } = getAuthInfo();
+
+  if (!token || !role) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (requiredRole && role !== requiredRole) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
+};

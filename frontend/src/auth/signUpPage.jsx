@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { FaUser, FaCarAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 
 const roles = [
     {
@@ -44,7 +42,6 @@ const formItems = [
     },
 ];
 
-
 function SignupPage() {
     const navigate = useNavigate();
 
@@ -62,12 +59,15 @@ function SignupPage() {
         setMessage("");
         setLoading(true);
 
-        const data = Object.fromEntries(new FormData(e.currentTarget));
+        const form = e.currentTarget;
+        const data = Object.fromEntries(new FormData(form));
 
         const roleMap = {
             rider: "passenger",
             driver: "driver",
         };
+
+        const backendRole = roleMap[selectedRole];
 
         try {
             const response = await fetch(
@@ -79,7 +79,7 @@ function SignupPage() {
                     },
                     body: JSON.stringify({
                         ...data,
-                        role: roleMap[selectedRole],
+                        role: backendRole,
                     }),
                 }
             );
@@ -90,16 +90,34 @@ function SignupPage() {
                 throw new Error(result.message || "Signup failed");
             }
 
-            localStorage.setItem("token", result.token);
- 
-            navigate("/");
+            const assignedRole = result.user?.role || result.role || backendRole;
+            const userObj = result.user || {
+                name: data.name,
+                email: data.email,
+                role: assignedRole,
+            };
+
+            if (result.token) {
+                localStorage.setItem("token", result.token);
+            }
+            localStorage.setItem("role", assignedRole);
+            localStorage.setItem("user", JSON.stringify(userObj));
 
             setMessage(result.message || "Account created successfully!");
             setMessageType("success");
 
-            e.target.reset();
+            form.reset();
             setSelectedRole("rider");
 
+            if (result.token) {
+                if (assignedRole === "driver") {
+                    navigate("/driver/availableRides", { replace: true });
+                } else {
+                    navigate("/passenger/bookRide", { replace: true });
+                }
+            } else {
+                navigate("/login", { replace: true });
+            }
         } catch (error) {
             setMessage(
                 error.message === "Failed to fetch"
@@ -107,7 +125,6 @@ function SignupPage() {
                     : error.message
             );
             setMessageType("error");
-
         } finally {
             setLoading(false);
         }
@@ -115,10 +132,9 @@ function SignupPage() {
 
     return (
         <div className="flex w-full min-h-screen bg-white">
-
             {/* --left-side-- */}
             <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-orange-500 to-orange-400 p-14 text-white">
-                <Link to={"/"}>
+                <Link to="/">
                     <h1 className="text-4xl font-extrabold tracking-tight">GoRivo</h1>
                 </Link>
 
@@ -139,13 +155,14 @@ function SignupPage() {
                 </p>
             </div>
 
-
             {/* right-form-side-- */}
             <div className="flex w-full lg:w-1/2 items-center justify-center px-6 py-10 sm:px-12">
                 <div className="w-full max-w-lg">
-                    <h1 className="text-3xl font-extrabold tracking-tight text-orange-500 lg:hidden">
-                        GoRivo
-                    </h1>
+                    <Link to="/" className="lg:hidden">
+                        <h1 className="text-3xl font-extrabold tracking-tight text-orange-500">
+                            GoRivo
+                        </h1>
+                    </Link>
 
                     <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900 lg:mt-0">
                         Create your account
@@ -153,7 +170,6 @@ function SignupPage() {
                     <p className="mt-2 text-base text-gray-500">
                         Get started with your email in less than a minute.
                     </p>
-
 
                     <h3 className="mt-8 text-sm font-semibold text-gray-700">
                         Choose your role
@@ -167,14 +183,16 @@ function SignupPage() {
                                     key={role.id}
                                     onClick={() => setSelectedRole(role.id)}
                                     aria-pressed={active}
-                                    className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 ${active
-                                        ? "border-orange-500 bg-orange-50"
-                                        : "border-gray-200 bg-white hover:border-gray-300"
-                                        }`}
+                                    className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 cursor-pointer ${
+                                        active
+                                            ? "border-orange-500 bg-orange-50"
+                                            : "border-gray-200 bg-white hover:border-gray-300"
+                                    }`}
                                 >
                                     <span
-                                        className={`mt-0.5 text-xl ${active ? "text-orange-500" : "text-gray-500"
-                                            }`}
+                                        className={`mt-0.5 text-xl ${
+                                            active ? "text-orange-500" : "text-gray-500"
+                                        }`}
                                     >
                                         {role.icon}
                                     </span>
@@ -195,15 +213,16 @@ function SignupPage() {
                     {message && (
                         <p
                             role="alert"
-                            className={`rounded-lg p-3 text-sm ${messageType === "success"
-                                ? "bg-green-50 text-green-700"
-                                : "bg-red-50 text-red-700"
-                                }`}
+                            className={`mt-5 rounded-lg p-3 text-sm font-medium ${
+                                messageType === "success"
+                                    ? "bg-green-50 text-green-700"
+                                    : "bg-red-50 text-red-700"
+                            }`}
                         >
                             {message}
                         </p>
                     )}
-                    <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+                    <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
                         {formItems.map((item) => {
                             const isPassword = item.name === "password";
                             return (
@@ -231,7 +250,7 @@ function SignupPage() {
                                                 aria-label={
                                                     showPassword ? "Hide password" : "Show password"
                                                 }
-                                                className="text-lg text-gray-400 hover:text-gray-600"
+                                                className="text-lg text-gray-400 hover:text-gray-600 cursor-pointer"
                                             >
                                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                                             </button>
@@ -244,7 +263,7 @@ function SignupPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="mt-2 w-full rounded-xl bg-orange-500 py-3.5 text-base font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="mt-2 w-full rounded-xl bg-orange-500 py-3.5 text-base font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                         >
                             {loading ? "Please wait..." : "Create account"}
                         </button>
@@ -252,9 +271,12 @@ function SignupPage() {
 
                     <p className="mt-6 text-center text-sm text-gray-500">
                         Already have an account?{" "}
-                        <a href="/login" className="font-semibold text-orange-500 hover:underline">
+                        <Link
+                            to="/login"
+                            className="font-semibold text-orange-500 hover:underline"
+                        >
                             Log in
-                        </a>
+                        </Link>
                     </p>
                 </div>
             </div>

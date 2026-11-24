@@ -10,9 +10,7 @@ const DriverRoutes = require("./routes/driver.routes")
 
 const app = express();
 
-// Middleware
-app.use(express.json());
-app.use(loggerMiddleware);
+
 
 
 app.use(cors({
@@ -24,6 +22,9 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
 }));
+// Middleware
+app.use(express.json());
+app.use(loggerMiddleware);
 // Home Route
 app.get("/", (req, res) => {
     res.send("Welcome To GoRivo");

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaArrowRight,
@@ -15,7 +15,8 @@ import {
 } from "react-icons/fa6";
 import Navbar from "../components/navbar";
 import RouteMap from "../components/RouteMap";
-import LocationInput from "../components/LocationInput";
+import LocationInput from "../components/locationInput";
+import { createRideApi } from "../services/rideService";
 
 const rideOptions = [
   {
@@ -51,18 +52,43 @@ const rideOptions = [
   },
 ];
 
+const extractBooking = (result) => {
+  if (!result) return null;
+  if (result.data?.ride?._id) return result.data.ride;
+  if (result.data?._id) return result.data;
+  if (result.ride?._id) return result.ride;
+  if (result._id) return result;
+  return null;
+};
+
+const withTimeout = (promise, ms = 15000) =>
+  new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(
+        new Error("Request timed out (15s). Server is taking too long to respond.")
+      );
+    }, ms);
+
+    promise
+      .then((val) => {
+        clearTimeout(timer);
+        resolve(val);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+
 function BookRide() {
   const navigate = useNavigate();
 
-  // input ka text
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
 
-  // suggestion se select hui jagah (name, lat, lng)
   const [pickupPoint, setPickupPoint] = useState(null);
   const [destinationPoint, setDestinationPoint] = useState(null);
 
-  // route ki info
   const [route, setRoute] = useState([]);
   const [distanceKm, setDistanceKm] = useState(0);
   const [durationMin, setDurationMin] = useState(0);
@@ -72,13 +98,21 @@ function BookRide() {
   const [error, setError] = useState("");
   const [isBooking, setIsBooking] = useState(false);
 
-  const selected = rideOptions.find((ride) => ride.id === selectedRide);
+  const isMountedRef = useRef(true);
 
-  // fare = base + per km * distance
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const selected =
+    rideOptions.find((ride) => ride.id === selectedRide) || rideOptions[1];
+
   const getPrice = (ride) =>
     distanceKm ? Math.round(ride.base + ride.perKm * distanceKm) : ride.base;
 
-  // Pickup aur destination dono aane par route nikalo (OSRM, free)
   useEffect(() => {
     if (!pickupPoint || !destinationPoint) {
       setRoute([]);
@@ -97,10 +131,10 @@ function BookRide() {
       .then((data) => {
         const r = data.routes?.[0];
         if (!r) return;
-        // GeoJSON [lng, lat] deta hai, Leaflet ko [lat, lng] chahiye
+
         setRoute(r.geometry.coordinates.map(([lng, lat]) => [lat, lng]));
         setDistanceKm(r.distance / 1000);
-        setDurationMin(Math.round(r.duration / 60));
+        setDurationMin(Math.max(1, Math.round(r.duration / 60)));
       })
       .catch(() => {});
 
@@ -144,70 +178,83 @@ function BookRide() {
   };
 
   const handleBookRide = async () => {
+    if (isBooking) return;
+
+    if (!pickup.trim() || !destination.trim()) {
+      setError("Please enter both pickup and destination.");
+      return;
+    }
+
     if (!pickupPoint || !destinationPoint) {
-      setError("Please select pickup and destination from the suggestions.");
+      setError("Please select pickup and destination from the suggestions list.");
       return;
     }
 
     if (!distanceKm || !durationMin) {
-      setError("Please wait until route details are calculated.");
+      setError("Calculating route... please wait 1 second and try again.");
       return;
     }
 
     const token = localStorage.getItem("token");
     if (!token) {
       setError("Please login to book a ride.");
+      navigate("/login");
       return;
     }
 
-  
     const bookingData = {
-      pickup: pickupPoint,
-      destination: destinationPoint,
+      pickup: {
+        name: pickupPoint.name || pickup.trim(),
+        lat: Number(pickupPoint.lat),
+        lng: Number(pickupPoint.lng),
+      },
+      destination: {
+        name: destinationPoint.name || destination.trim(),
+        lat: Number(destinationPoint.lat),
+        lng: Number(destinationPoint.lng),
+      },
       rideType: selected.id,
-      distanceKm,
-      durationMin,
-      fare: getPrice(selected),
-      payment ,
+      distanceKm: Number(distanceKm.toFixed(2)),
+      durationMin: Number(durationMin),
+      fare: Number(getPrice(selected)),
+      payment,
     };
-    console.log("Sending to backend:", bookingData);
 
     try {
       setIsBooking(true);
       setError("");
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/ride`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(bookingData),
-      });
+      const result = await withTimeout(createRideApi(bookingData), 15000);
+      const booking = extractBooking(result);
 
-      const result = await response.json();
-      console.log("Backend response:", result);
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Failed to create booking");
+      if (!booking?._id) {
+        console.error("Unexpected createRideApi response:", result);
+        throw new Error("Ride created, but booking ID missing in response.");
       }
 
-      const booking = result.data;
+      if (!isMountedRef.current) return;
 
-      navigate(`/passenger/BookConform/${booking._id}`, {
-        state: { otp: booking.otp },
+      navigate(`/passenger/activeride/${booking._id}`, {
+        state: { otp: booking.otp, ride: booking },
       });
     } catch (err) {
       console.error("Ride booking error:", err);
+      if (!isMountedRef.current) return;
 
-      
-      if (err.message === "Failed to fetch") {
-        setError("Cannot reach the server. Check that the backend is running.");
+      const statusCode = err?.response?.status || err?.status;
+      if (statusCode === 401) {
+        setError("Session expired. Please login again.");
+      } else if (err.message === "Failed to fetch") {
+        setError("Cannot reach the server. Check backend URL and server status.");
       } else {
-        setError(err.message || "Something went wrong.");
+        setError(
+          err?.response?.data?.message || err?.message || "Something went wrong."
+        );
       }
     } finally {
-      setIsBooking(false);
+      if (isMountedRef.current) {
+        setIsBooking(false);
+      }
     }
   };
 
@@ -234,9 +281,9 @@ function BookRide() {
 
               <div className="mt-4 flex items-stretch gap-3">
                 <div className="flex flex-col items-center py-5">
-                  <span className="h-3 w-3 rounded-full bg-gray-900"></span>
-                  <span className="my-1 w-px flex-1 bg-gray-300"></span>
-                  <span className="h-3 w-3 bg-orange-500"></span>
+                  <span className="h-3 w-3 rounded-full bg-gray-900" />
+                  <span className="my-1 w-px flex-1 bg-gray-300" />
+                  <span className="h-3 w-3 bg-orange-500" />
                 </div>
 
                 <div className="min-w-0 flex-1 space-y-3">
@@ -460,7 +507,7 @@ function BookRide() {
                 type="button"
                 onClick={handleBookRide}
                 disabled={isBooking}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 py-4 font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-orange-500 py-4 font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isBooking ? "Creating booking..." : "Confirm booking"}
                 {!isBooking && <FaArrowRight />}
