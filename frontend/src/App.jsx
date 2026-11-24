@@ -13,6 +13,8 @@ import AvailableRides from "./driverPages/availableRides";
 import DriverTripConsole from "./driverPages/driverTripConsole";
 
 import { PublicOnly, RequireRole } from "./components/routeGuards";
+import DriverDashboard from "./driverPages/driverDashboard";
+import DriverHistory from "./driverPages/driverHistory";
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
       <Route element={<RequireRole role="driver" />}>
         <Route path="/driver/profile" element={<DriverProfile />} />
         <Route path="/driver/availableRides" element={<AvailableRides />} />
+        <Route path="/driver/dashboard" element={<DriverDashboard />} />
+        <Route path="/driver/history" element={<DriverHistory />} />
         <Route path="/driver/driverTrip/:rideId" element={<DriverTripConsole />} />
       </Route>
 

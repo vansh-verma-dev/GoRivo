@@ -48,3 +48,5 @@ export const updateRideStatusApi = (rideId, payload) =>
     method: "PATCH",
     body: JSON.stringify(payload),
   });
+
+  export const getDriverRidesApi = () => request("/drive/my-rides");

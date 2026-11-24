@@ -163,8 +163,18 @@ const UpdateStatus = async (req, res) => {
   }
 };
 
+const GetDriverRides = async (req, res, next) => {
+  try {
+    const rides = await Ride.find({ driver: req.user._id }).sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, count: rides.length, data: rides });
+  } catch (error) {
+    next(error);
+  }
+};
 module.exports = {
   GetAvailableRides,
   AcceptRide,
   UpdateStatus,
+  GetDriverRides
 };
