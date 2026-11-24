@@ -15,7 +15,7 @@ import {
 } from "react-icons/fa6";
 import Navbar from "../components/navbar";
 import RouteMap from "../components/RouteMap";
-import LocationInput from "../components/locationInput";
+import LocationInput from "../components/LocationInput";
 import { createRideApi } from "../services/rideService";
 
 const rideOptions = [

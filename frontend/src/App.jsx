@@ -12,7 +12,7 @@ import DriverProfile from "./driverPages/driverProfile";
 import AvailableRides from "./driverPages/availableRides";
 import DriverTripConsole from "./driverPages/driverTripConsole";
 
-import { PublicOnly, RequireRole } from "./components/routeGuards";
+import { PublicOnly, RequireRole } from "./components/RouteGuards";
 import DriverDashboard from "./driverPages/driverDashboard";
 import DriverHistory from "./driverPages/driverHistory";
 
