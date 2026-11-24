@@ -33,7 +33,6 @@ const NAV_CONFIG = {
     links: [
       { to: "/driver/dashboard", label: "Dashboard", icon: FaGauge },
       { to: "/driver/rideRequest", label: "Requests", icon: FaInbox },
-      { to: "/driver/trip", label: "Active trip", icon: FaRoute },
       { to: "/driver/history", label: "History", icon: FaClockRotateLeft },
       { to: "/driver/profile", label: "Profile", icon: FaUser },
     ],

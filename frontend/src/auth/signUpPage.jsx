@@ -83,23 +83,36 @@ function SignupPage() {
                     }),
                 }
             );
-
-            const result = await response.json();
+const result = await response.json();
 
             if (!response.ok) {
                 throw new Error(result.message || "Signup failed");
             }
 
-            const assignedRole = result.user?.role || result.role || backendRole;
-            const userObj = result.user || {
-                name: data.name,
-                email: data.email,
-                role: assignedRole,
-            };
+            const token =
+                result.token || result.data?.token || result.accessToken;
 
-            if (result.token) {
-                localStorage.setItem("token", result.token);
+            if (!token) {
+                console.log("Signup response without token:", result);
+                throw new Error(
+                    "Authentication token missing from server response."
+                );
             }
+
+            const assignedRole =
+                result.user?.role ||
+                result.data?.user?.role ||
+                result.role ||
+                backendRole;
+
+            const userObj = result.user ||
+                result.data?.user || {
+                    name: data.name,
+                    email: data.email,
+                    role: assignedRole,
+                };
+
+            localStorage.setItem("token", token);
             localStorage.setItem("role", assignedRole);
             localStorage.setItem("user", JSON.stringify(userObj));
 
@@ -109,15 +122,13 @@ function SignupPage() {
             form.reset();
             setSelectedRole("rider");
 
-            if (result.token) {
-                if (assignedRole === "driver") {
-                    navigate("/driver/availableRides", { replace: true });
-                } else {
-                    navigate("/passenger/bookRide", { replace: true });
-                }
+            if (assignedRole === "driver") {
+                navigate("/driver/availableRides", { replace: true });
             } else {
-                navigate("/login", { replace: true });
+                navigate("/passenger/bookRide", { replace: true });
             }
+            
+           
         } catch (error) {
             setMessage(
                 error.message === "Failed to fetch"

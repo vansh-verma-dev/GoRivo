@@ -1,4 +1,3 @@
-
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../module/user.module");
@@ -60,9 +59,22 @@ const signup = async (req, res, next) => {
             role: userRole,
         });
 
+        // Generate JWT token so user gets instant access after signup
+        const token = jwt.sign(
+            {
+                id: user._id,
+                role: user.role,
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: process.env.JWT_EXPIRES_IN || "1d",
+            }
+        );
+
         return res.status(201).json({
             success: true,
             message: "User created successfully",
+            token,
             user: {
                 id: user._id,
                 name: user.name,
@@ -98,8 +110,7 @@ const getUsers = async (req, res, next) => {
     }
 };
 
-//login Users
- 
+// login Users
 const loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -165,8 +176,8 @@ const loginUser = async (req, res, next) => {
         next(error);
     }
 };
- 
-//LogOut
+
+// LogOut
 const Logout = async (req, res) => {
     try {
         return res.status(200).json({
@@ -180,7 +191,8 @@ const Logout = async (req, res) => {
         });
     }
 };
-//get profile 
+
+// get profile
 const getProfile = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id)
@@ -208,11 +220,10 @@ const getProfile = async (req, res, next) => {
     }
 };
 
-
 module.exports = {
-     signup  , 
-    getUsers ,
+    signup,
+    getUsers,
     loginUser,
     getProfile,
-    Logout
-    };
+    Logout,
+};

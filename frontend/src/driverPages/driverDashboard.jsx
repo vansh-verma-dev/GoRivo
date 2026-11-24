@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FiCheckCircle,
+  FiClock,
   FiMapPin,
   FiNavigation,
   FiRefreshCw,
@@ -9,14 +10,20 @@ import {
 import { FaCarSide } from "react-icons/fa";
 import Navbar from "../components/navbar";
 import {
-  getAvailableRidesApi,
   getDriverRidesApi,
-  acceptRideApi,
   updateRideStatusApi,
 } from "../services/rideService";
 
+const STATUS_BADGE = {
+  accepted: "bg-blue-50 text-blue-600 border-blue-200",
+  arriving: "bg-indigo-50 text-indigo-600 border-indigo-200",
+  started: "bg-amber-50 text-amber-700 border-amber-200",
+  completed: "bg-green-50 text-green-700 border-green-200",
+  cancelled: "bg-red-50 text-red-600 border-red-200",
+};
+
 function DriverDashboard() {
-  const [availableRides, setAvailableRides] = useState([]);
+  const [acceptedRides, setAcceptedRides] = useState([]);
   const [activeRide, setActiveRide] = useState(null);
   const [stats, setStats] = useState({
     totalRides: 0,
@@ -34,15 +41,15 @@ function DriverDashboard() {
   const loadDashboardData = useCallback(async () => {
     try {
       setError("");
-      const [availRes, myRidesRes] = await Promise.all([
-        getAvailableRidesApi(),
-        getDriverRidesApi(),
-      ]);
+      const myRidesRes = await getDriverRidesApi();
 
-      setAvailableRides(availRes?.data || []);
+      // Driver ne jitni bhi rides accept ki hain (status: accepted, arriving, started, completed, cancelled)
+      const allMyRides = Array.isArray(myRidesRes?.data)
+        ? myRidesRes.data
+        : [];
 
-      // Fallback: agar backend activeRide alag se nahi bhej raha toh rides list se nikal lo
-      const allMyRides = myRidesRes?.data || [];
+      setAcceptedRides(allMyRides);
+
       const foundActive =
         myRidesRes?.activeRide ||
         allMyRides.find((r) =>
@@ -79,21 +86,6 @@ function DriverDashboard() {
     const interval = setInterval(loadDashboardData, 6000);
     return () => clearInterval(interval);
   }, [loadDashboardData]);
-
-  const handleAcceptRide = async (rideId) => {
-    try {
-      setActionLoading(true);
-      setError("");
-      setMessage("");
-      const res = await acceptRideApi(rideId);
-      setMessage(res?.message || "Ride accepted!");
-      await loadDashboardData();
-    } catch (err) {
-      setError(err?.message || "Could not accept ride");
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const handleStatusUpdate = async (nextStatus) => {
     if (!activeRide?._id) return;
@@ -135,7 +127,7 @@ function DriverDashboard() {
               Captain <span className="text-orange-500">Dashboard</span>
             </h1>
             <p className="text-sm text-gray-500">
-              Manage your active trip, accept nearby rides, and track earnings.
+              Manage your active trip and view rides you have accepted.
             </p>
           </div>
 
@@ -151,7 +143,7 @@ function DriverDashboard() {
               to="/driver/history"
               className="rounded-xl bg-gray-900 px-4 py-2 text-xs font-bold text-white hover:bg-gray-800"
             >
-              Ride History
+              Full History
             </Link>
           </div>
         </div>
@@ -159,7 +151,7 @@ function DriverDashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-2xl border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-400">Total Trips</p>
+            <p className="text-xs text-gray-400">Accepted Rides</p>
             <p className="mt-1 text-2xl font-extrabold">{stats.totalRides}</p>
           </div>
           <div className="rounded-2xl border border-gray-200 bg-white p-4">
@@ -194,7 +186,7 @@ function DriverDashboard() {
           </div>
         )}
 
-        {/* Active Accepted Ride Section */}
+        {/* Active Accepted Ride Controls */}
         {activeRide && (
           <section className="space-y-4 rounded-3xl border-2 border-orange-500 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -275,62 +267,68 @@ function DriverDashboard() {
           </section>
         )}
 
-        {/* Available Rides List */}
+        {/* Accepted Rides List (Available Rides ki jagah) */}
         <section className="space-y-4 rounded-3xl border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-extrabold">
-            Available Rides ({availableRides.length})
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-extrabold">
+              Accepted Rides ({acceptedRides.length})
+            </h2>
+          </div>
 
           {loading ? (
             <p className="py-6 text-center text-sm text-gray-500">
-              Loading rides...
+              Loading accepted rides...
             </p>
-          ) : availableRides.length === 0 ? (
+          ) : acceptedRides.length === 0 ? (
             <p className="py-6 text-center text-sm text-gray-500">
-              No ride requests available right now.
+              Aapne abhi tak koi ride accept nahi ki hai.
             </p>
           ) : (
             <div className="space-y-3">
-              {availableRides.map((ride) => (
+              {acceptedRides.map((ride) => (
                 <div
                   key={ride._id}
                   className="flex flex-col justify-between gap-4 rounded-2xl border border-gray-100 p-4 sm:flex-row sm:items-center"
                 >
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-bold uppercase text-orange-600">
-                        <FaCarSide /> {ride.rideType}
+                        <FaCarSide /> {ride.rideType || "ride"}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span
+                        className={`rounded-full border px-2.5 py-0.5 text-xs font-bold capitalize ${
+                          STATUS_BADGE[ride.status] ||
+                          "border-gray-200 bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {ride.status}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                        <FiClock />
                         {Number(ride.distanceKm || 0).toFixed(1)} km ·{" "}
                         {ride.durationMin || 0} min
                       </span>
                     </div>
+
                     <p className="text-sm font-bold text-gray-900">
                       {ride.pickup?.name} → {ride.destination?.name}
                     </p>
+
                     <p className="text-xs text-gray-500">
-                      Passenger: {ride.passenger?.name || "Passenger"} · Payment:{" "}
+                      Booking: <strong>{ride.bookingId || ride._id}</strong> ·
+                      Passenger:{" "}
+                      <strong>{ride.passenger?.name || "Passenger"}</strong> ·
+                      Payment:{" "}
                       <span className="uppercase">
-                        {typeof ride.payment === "object"
-                          ? ride.payment?.method
-                          : ride.payment || "cash"}
+                        {ride.payment?.method || ride.payment || "cash"}
                       </span>
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between gap-4 sm:justify-end">
+                  <div className="text-right">
                     <span className="text-lg font-extrabold text-gray-900">
                       ₹{ride.fare}
                     </span>
-                    <button
-                      type="button"
-                      disabled={actionLoading || Boolean(activeRide)}
-                      onClick={() => handleAcceptRide(ride._id)}
-                      className="cursor-pointer rounded-xl bg-orange-500 px-4 py-2.5 text-xs font-bold text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {activeRide ? "Trip Active" : "Accept Ride"}
-                    </button>
                   </div>
                 </div>
               ))}
